@@ -19,7 +19,6 @@ int main(void){
     col[1]=6;
     
     // membuat matrix A 
-    srand(time(NULL));
     for(int i=0; i<row[0]; i++)
         for(int j=0; j<col[0]; j++)
             matriksA[i][j] = rand()%20+1;
