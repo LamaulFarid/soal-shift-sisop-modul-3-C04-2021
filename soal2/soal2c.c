@@ -51,12 +51,7 @@ int main() {
     }
 
     // fork (ps -aux)
-    if((pid = fork()) == -1){
-        perror("gagal membuat fork");
-        exit(EXIT_FAILURE);
-    }else if(pid == 0){
-        command1();
-    }
+    if(fork() == 0) command1();
 
     // buat pipe_[1]
     if(pipe(pipe_[1]) == -1){
@@ -65,22 +60,12 @@ int main() {
     }
 
     // fork (sort)
-    if((pid = fork()) == -1){
-        perror("gagal membuat fork");
-        exit(EXIT_FAILURE);
-    }else if(pid == 0){
-        command2();
-    }
+    if(fork() == 0) command2();
 
     // tutup fds tidak terpakai
     close(pipe_[0][0]);
     close(pipe_[0][1]);
 
     // fork (grep sbin)
-    if((pid = fork()) == -1){
-        perror("gagal membuat fork");
-        exit(EXIT_FAILURE);
-    }else if(pid == 0){
-        command3();
-    }
+    if(fork() == 0) command3();
 }
