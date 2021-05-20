@@ -25,6 +25,7 @@ void *filterFile(void *filePath) {
     char currPath[1000];
     char oldFile[500];
 
+    printf("Thread Id [%d]\n", thread_id_index);
     ptr_ext = strrchr(filePath, '.');
 
     ext[0] = '\0';
@@ -42,17 +43,14 @@ void *filterFile(void *filePath) {
     char *fileName = strrchr(filePath, '/');
     memmove(&fileName[0], &fileName[1], strlen(fileName) - 0);
 
-    int isHidden = 0;
+    printf("File name : %s\n", fileName);
+
     if(fileName[0] == '.') {
         mkdir("hidden", 0777);
         strcat(currPath, "/hidden/");
         strcat(currPath, fileName);
         rename(oldFile, currPath);
-        isHidden = 1;
-    }
-
-    printf("File name : %s\n", fileName);
-    if(!isHidden) {
+    } else {
         if(strlen(ext) > 0 ) {
             mkdir(ext, 0777);
             strcat(currPath, "/");
@@ -67,10 +65,12 @@ void *filterFile(void *filePath) {
             rename(oldFile,currPath);
         }
     }
+
+    pthread_exit(0);
 }
 
 void filterDir(char *basePath) {
-    char path[500];
+    char path[500], thisCode[500];
     struct dirent *dirent_ptr;
     DIR *directory = opendir(basePath);
 
@@ -84,10 +84,12 @@ void filterDir(char *basePath) {
             strcat(path, "/");
             strcat(path, dirent_ptr->d_name);
             if(dirent_ptr->d_type == DT_REG) {
-                if(strcmp(path, "/home/arfare/Tugas/modul3/soal3/soal3.c") != 0) {
+                strcpy(thisCode, basePath);
+                strcat(thisCode, "/soal3.c");
+                if(strcmp(path, thisCode) != 0) {
                     pthread_create(&thread_id[thread_id_index], NULL, filterFile, (void *)path);
+                    sleep(1);
                     thread_id_index++;
-
                 }
             } else if(dirent_ptr->d_name[0] != '.') {
                 filterDir(path);
@@ -115,6 +117,7 @@ int main(int argc, char const *argv[])
                 pthread_create(&thread_id[thread_id_index], NULL, filterFile, (void *)filePath);
 
                 printf("File %d: Berhasil Dikategorikan\n", i-1);
+                sleep(1);
                 ++thread_id_index;
             } else {
                 printf("File %d: Sad, gagal :(\n", i-1);
@@ -130,14 +133,17 @@ int main(int argc, char const *argv[])
         }
         char basePath[500];
         int oldThreadId, newThreadId;
+
+        strcpy(basePath, argv[2]);
         oldThreadId = thread_id_index;
         filterDir(basePath);
         newThreadId = thread_id_index;
         int sukses = 1;
 
-        for(int i=oldThreadId; i<=newThreadId; i++) {
+        for(int i=oldThreadId; i<newThreadId; i++) {
             if(pthread_join(thread_id[i], NULL)) {
                 sukses = 0;
+                printf("Thread gagal : %d\n", i);
             }
         }
         if(sukses) {
@@ -145,12 +151,25 @@ int main(int argc, char const *argv[])
         } else {
             printf("Yah, gagal disimpan :(\n");
         }
-    } else if(strcmp(argv[1], "-*") == 0) {
-        if(argc <= 2) {
-            printf("Argument tidak sesuai\n");
-            exit(1);
-        }
+    } else if(strcmp(argv[1], "\*") == 0) {
+        int oldThreadId, newThreadId;
+        
+        oldThreadId = thread_id_index;
         filterDir(curPath);
+        newThreadId = thread_id_index;
+        int sukses = 1;
+
+        for(int i=oldThreadId; i<newThreadId; i++) {
+            if(pthread_join(thread_id[i], NULL)) {
+                sukses = 0;
+                printf("Thread gagal : %d\n", i);
+            }
+        }
+        if(sukses) {
+            printf("Direktori sukses disimpan!\n");
+        } else {
+            printf("Yah, gagal disimpan :(\n");
+        }
     }
     return 0;
 }
