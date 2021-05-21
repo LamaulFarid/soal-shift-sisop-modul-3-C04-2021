@@ -25,8 +25,9 @@ void *filterFile(void *filePath) {
     char currPath[1000];
     char oldFile[500];
 
-    printf("Thread Id [%d]\n", thread_id_index);
-    ptr_ext = strrchr(filePath, '.');
+    // printf("Thread Id [%d]\n", thread_id_index);
+    ptr_ext = strchr(filePath, '.');
+    // printf("Pointer of Ext : %s\n", ptr_ext);
 
     ext[0] = '\0';
     if(ptr_ext) {
@@ -36,14 +37,14 @@ void *filterFile(void *filePath) {
         }
         ext[strlen(ptr_ext)] = '\0';
     }
-    printf("Ekstensi : %s\n", ext);
+    // printf("Ekstensi : %s\n", ext);
 
     strcpy(oldFile, filePath);
     strcpy(currPath, curPath);
     char *fileName = strrchr(filePath, '/');
     memmove(&fileName[0], &fileName[1], strlen(fileName) - 0);
 
-    printf("File name : %s\n", fileName);
+    // printf("File name : %s\n", fileName);
 
     if(fileName[0] == '.') {
         mkdir("hidden", 0777);
@@ -113,7 +114,7 @@ int main(int argc, char const *argv[])
             strcpy(filePath, argv[i]);
 
             if(checkFile(filePath)) {
-                printf("Current dir : %s\nFile Path : %s\n", curPath, filePath);
+                // printf("Current dir : %s\nFile Path : %s\n", curPath, filePath);
                 pthread_create(&thread_id[thread_id_index], NULL, filterFile, (void *)filePath);
 
                 printf("File %d: Berhasil Dikategorikan\n", i-1);
@@ -143,7 +144,7 @@ int main(int argc, char const *argv[])
         for(int i=oldThreadId; i<newThreadId; i++) {
             if(pthread_join(thread_id[i], NULL)) {
                 sukses = 0;
-                printf("Thread gagal : %d\n", i);
+                // printf("Thread gagal : %d\n", i);
             }
         }
         if(sukses) {
@@ -162,7 +163,7 @@ int main(int argc, char const *argv[])
         for(int i=oldThreadId; i<newThreadId; i++) {
             if(pthread_join(thread_id[i], NULL)) {
                 sukses = 0;
-                printf("Thread gagal : %d\n", i);
+                // printf("Thread gagal : %d\n", i);
             }
         }
         if(sukses) {
