@@ -121,13 +121,13 @@ int main(int argc, char const *argv[])
         }
         pthread_t tid[argc-2];
         int count=0;
+        char filePath[argc-2][2000];
         for(int i=2; i<argc; i++) {
-            char filePath[2000];
-            strcpy(filePath, argv[i]);
+            strcpy(filePath[count], argv[i]);
 
-            if(checkFile(filePath)) {
-                // printf("Current dir : %s\nFile Path : %s\n", curPath, filePath);
-                pthread_create(&tid[count], NULL, filterFile, (void *)filePath);
+            if(checkFile(filePath[count])) {
+                // printf("Current dir : %s\nFile Path : %s\n", curPath, filePath[count]);
+                pthread_create(&tid[count], NULL, filterFile, (void *)filePath[count]);
                 count++;
                 printf("File %d: Berhasil Dikategorikan\n", i-1);
                 
