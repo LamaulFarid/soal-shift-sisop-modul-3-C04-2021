@@ -1,5 +1,5 @@
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -9,8 +9,6 @@
 #include <string.h>
 #include <unistd.h>
 
-pthread_t thread_id[1000];
-int thread_id_index;
 char curPath[2000];
 
 int checkFile(const char *path) {
@@ -25,7 +23,6 @@ void *filterFile(void *filePath) {
     char currPath[1000];
     char oldFile[500];
 
-    // printf("Thread Id [%d]\n", thread_id_index);
     ptr_ext = strchr(filePath, '.');
     // printf("Pointer of Ext : %s\n", ptr_ext);
 
@@ -42,9 +39,9 @@ void *filterFile(void *filePath) {
     strcpy(oldFile, filePath);
     strcpy(currPath, curPath);
     char *fileName = strrchr(filePath, '/');
+    // printf("File name : %s\n", (char *)filePath);
     memmove(&fileName[0], &fileName[1], strlen(fileName) - 0);
 
-    // printf("File name : %s\n", fileName);
 
     if(fileName[0] == '.') {
         mkdir("hidden", 0777);
@@ -66,36 +63,49 @@ void *filterFile(void *filePath) {
             rename(oldFile,currPath);
         }
     }
-
-    pthread_exit(0);
 }
 
-void filterDir(char *basePath) {
-    char path[500], thisCode[500];
-    struct dirent *dirent_ptr;
+void filterDir(char *basePath, int threadSize) {
+    char path[500][500], thisCode[500];
     DIR *directory = opendir(basePath);
+    struct dirent *dirent_ptr;
+    pthread_t tid[threadSize];
+    int count=0;
 
     if(!directory) {
         return;
     }
 
     while((dirent_ptr = readdir(directory)) != NULL) {
-        if(strcmp(dirent_ptr->d_name, ".") != 0 && strcmp(dirent_ptr->d_name, "..") != 0) {
-            strcpy(path, basePath);
-            strcat(path, "/");
-            strcat(path, dirent_ptr->d_name);
-            if(dirent_ptr->d_type == DT_REG) {
-                strcpy(thisCode, basePath);
-                strcat(thisCode, "/soal3.c");
-                if(strcmp(path, thisCode) != 0) {
-                    pthread_create(&thread_id[thread_id_index], NULL, filterFile, (void *)path);
-                    sleep(1);
-                    thread_id_index++;
-                }
-            } else if(dirent_ptr->d_name[0] != '.') {
-                filterDir(path);
+        strcpy(path[count], basePath);
+        strcat(path[count], "/");
+        strcat(path[count], dirent_ptr->d_name);
+        if(dirent_ptr->d_type == DT_REG) {
+            strcpy(thisCode, basePath);
+            strcat(thisCode, "/soal3.c");
+            if(strcmp(path[count], thisCode) != 0) {
+                pthread_create(&tid[count], NULL, filterFile, (void *)path[count]);
+                
+                count++;
             }
+        } else if((dirent_ptr->d_type == DT_DIR) && (strcmp(dirent_ptr->d_name, ".") != 0)
+                    && (strcmp(dirent_ptr->d_name, "..") != 0)) {
+            
+            DIR *directory2 = opendir(path[count]);
+            struct dirent *dirent_ptr2;
+            int threadSize2=0;
+            while((dirent_ptr2 = readdir(directory2)) != NULL) {
+                if(dirent_ptr2->d_type == DT_REG) {
+                    threadSize2++;
+                }
+            }
+            filterDir(path[count], threadSize2);
+            closedir(directory2);
         }
+    }
+
+    for(int i=0; i<threadSize; i++) {
+        pthread_join(tid[i], NULL);
     }
 
     closedir(directory);
@@ -109,66 +119,67 @@ int main(int argc, char const *argv[])
             printf("Argument tidak sesuai\n");
             exit(1);
         }
+        pthread_t tid[argc-2];
+        int count=0;
         for(int i=2; i<argc; i++) {
             char filePath[2000];
             strcpy(filePath, argv[i]);
 
             if(checkFile(filePath)) {
                 // printf("Current dir : %s\nFile Path : %s\n", curPath, filePath);
-                pthread_create(&thread_id[thread_id_index], NULL, filterFile, (void *)filePath);
-
+                pthread_create(&tid[count], NULL, filterFile, (void *)filePath);
+                count++;
                 printf("File %d: Berhasil Dikategorikan\n", i-1);
-                sleep(1);
-                ++thread_id_index;
+                
             } else {
                 printf("File %d: Sad, gagal :(\n", i-1);
             }
         }
-        for(int i=0; i<thread_id_index; i++) {
-            pthread_join(thread_id[i], NULL);
+        for(int i=0; i<count; i++) {
+            pthread_join(tid[i], NULL);
         }
     } else if(strcmp(argv[1], "-d") == 0) {
+        char folderPath[400];
+        strcpy(folderPath, argv[2]);
+
         if(argc <= 2) {
             printf("Argument tidak sesuai\n");
             exit(1);
         }
-        char basePath[500];
-        int oldThreadId, newThreadId;
+        DIR *fd = opendir(argv[2]);
 
-        strcpy(basePath, argv[2]);
-        oldThreadId = thread_id_index;
-        filterDir(basePath);
-        newThreadId = thread_id_index;
-        int sukses = 1;
+        if(fd) {
+            struct dirent *dp;
+            int threadSize=0;
 
-        for(int i=oldThreadId; i<newThreadId; i++) {
-            if(pthread_join(thread_id[i], NULL)) {
-                sukses = 0;
-                // printf("Thread gagal : %d\n", i);
+            while((dp = readdir(fd)) != NULL) {
+                if(dp->d_type == DT_REG) {
+                    threadSize++;
+                }
             }
-        }
-        if(sukses) {
+            filterDir(folderPath, threadSize);
+            closedir(fd);
             printf("Direktori sukses disimpan!\n");
-        } else {
+        } else if(ENOENT == errno) {
             printf("Yah, gagal disimpan :(\n");
         }
     } else if(strcmp(argv[1], "\*") == 0) {
-        int oldThreadId, newThreadId;
-        
-        oldThreadId = thread_id_index;
-        filterDir(curPath);
-        newThreadId = thread_id_index;
-        int sukses = 1;
+        DIR *fd = opendir(curPath);
+        struct dirent *dp;
+        int threadSize=0;
+        if(fd) {
+            struct dirent *dp;
+            int threadSize=0;
 
-        for(int i=oldThreadId; i<newThreadId; i++) {
-            if(pthread_join(thread_id[i], NULL)) {
-                sukses = 0;
-                // printf("Thread gagal : %d\n", i);
+            while((dp = readdir(fd)) != NULL) {
+                if(dp->d_type == DT_REG) {
+                    threadSize++;
+                }
             }
-        }
-        if(sukses) {
+            filterDir(curPath, threadSize);
+            closedir(fd);
             printf("Direktori sukses disimpan!\n");
-        } else {
+        } else if(ENOENT == errno) {
             printf("Yah, gagal disimpan :(\n");
         }
     }
