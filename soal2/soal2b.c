@@ -26,6 +26,7 @@ void* perkaliancell(void* args){
         long long hasil=1;
         long long start = (A-B)+1;
         if(A-B == 0) start = 1;
+        if(B==0) hasil = 0;
         
         for(long long i=start; i<=A; i++){
             hasil *= i;
@@ -33,12 +34,11 @@ void* perkaliancell(void* args){
         *address = hasil;
     }else if(B > A){
         long long hasil=1;
+        if(A==0) hasil = 0;
         for(long long i=1; i<=A; i++){
             hasil *= i;
         }
         *address = hasil;
-    }else{
-        *address = 0;
     }
 }
 
