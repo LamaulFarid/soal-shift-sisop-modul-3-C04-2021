@@ -92,8 +92,7 @@ Hasil output
 7 9 7 6 8 9 
 ```
 
-<a href="https://github.com/LamaulFarid/soal-shift-sisop-modul-3-C04-2021/blob/main/soal2/soal2a.c">soal2a.c</a>.
-
+![Program `soal2a.c` ketika dijalankan](docs/soal2a.jpg)
 ## B
 
 Membuat program dengan menggunakan matriks output dari program `soal2a`. Kemudian matriks tersebut akan dilakukan perhitungan dengan matrix baru. Perhitungannya adalah setiap cel yang berasal dari matriks A menjadi angka untuk faktorial, lalu cel dari matriks B menjadi batas maksimal faktorialnya (dari paling besar ke paling kecil) atau dengan syarat : 
@@ -214,7 +213,7 @@ Setelah itu `thread` akan di-wait sampai `thread` selesai berjalan.
 
 Kemudian hasil faktorial dari matriks A dan matriks B akan dicetak. 
 
-<a href="https://github.com/LamaulFarid/soal-shift-sisop-modul-3-C04-2021/blob/main/soal2/soal2b.c">soal2b.c</a>.
+![Program `soal2b.c` ketika dijalankan](docs/soal2b.jpg)
 
 ## C
 
@@ -277,8 +276,6 @@ Kami membuat fungsi `command1()` untuk menyimpan perintah `ps aux`, fungsi `comm
 ```
 
 Kemudian pada fungsi `main()`, terlebih dahulu dibuat `pipe_[0]` jika gagal membuat `pipe` maka cetak `gagal membuat pipe`. Setelah itu, dibuat fork untuk memanggil fungsi `command1()` dan kemudian dibuat `pipe_[1]` jika gagal membuat `pipe` maka cetak `gagal membuat pipe`. Setelah itu, dibuat fork untuk memanggil fungsi `command2()`. Lalu, fds yang tidak terpakai ditutup dan dibuat fork untuk memanggil fungsi `command3()`.
-
-<a href="https://github.com/LamaulFarid/soal-shift-sisop-modul-3-C04-2021/blob/main/soal2/soal2c.c">soal2c.c</a>.
 
 ## Soal 3
 Pada soal no 3, diminta untuk membuat program dengan kriteria berikut :
