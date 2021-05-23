@@ -92,7 +92,7 @@ Hasil output
 7 9 7 6 8 9 
 ```
 
-![Program `soal2a.c` ketika dijalankan](docs/soal2a.jpg)
+![Program `soal2a.c` ketika dijalankan](docs/soal2a.JPG)
 ## B
 
 Membuat program dengan menggunakan matriks output dari program `soal2a`. Kemudian matriks tersebut akan dilakukan perhitungan dengan matrix baru. Perhitungannya adalah setiap cel yang berasal dari matriks A menjadi angka untuk faktorial, lalu cel dari matriks B menjadi batas maksimal faktorialnya (dari paling besar ke paling kecil) atau dengan syarat : 
@@ -213,7 +213,7 @@ Setelah itu `thread` akan di-wait sampai `thread` selesai berjalan.
 
 Kemudian hasil faktorial dari matriks A dan matriks B akan dicetak. 
 
-![Program `soal2b.c` ketika dijalankan](docs/soal2b.jpg)
+![Program `soal2b.c` ketika dijalankan](docs/soal2b.JPG)
 
 ## C
 
