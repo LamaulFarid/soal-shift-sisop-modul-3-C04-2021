@@ -8,6 +8,278 @@ Link soal [Soal Shift 3](https://docs.google.com/document/d/1ud1JyncoSDAo5hA03wP
 
 ## Soal 1
 ## Soal 2
+
+pada soal nomor 2 ini kita diminta untuk membuat program dalam bahasa C dengan ketentuan sebagai berikut : 
+
+## A
+
+Membuat program perkalian matrix (4x3 dengan 3x6) dan menampilkan hasilnya.
+```c
+    key_t key = 4121;
+    int shmid = shmget(key, 512, IPC_CREAT | 0666);
+	void* memory = shmat(shmid, NULL, 0);
+    long long (*result)[6] = memory;
+```
+Kami disini menggunakan shared memory, karena pada `soal2a` masih berhubungan dengan soal2b (untuk melakukan pertukaran data antar program).
+```c
+    printf("[+] Masukkan matriks 4x3:\n");
+	for(int i = 0; i<4; i++){
+		for(int j = 0; j<3; ++j){
+			scanf("%lld", &matrix_1[i][j]);
+		}
+	}
+
+	printf("\n");
+
+    printf("[+] Masukkan matriks 3x6:\n");
+	for(int i=0; i<3; i++){
+		for(int j=0; j<6; ++j){
+			scanf("%lld", &matrix_2[i][j]);
+		}
+	}
+
+	printf("\n"); 
+```
+Kami menggunakan input sendiri (dapat berubah), karena menurut kami itu lebih fleksibel, dimana dengan memasukkan nilai pada matriks 1 dan 2 yang kemudian nanti nilainya dapat diubah sesuai kehendak pengguna.
+```c
+	for(int i=0; i<4; i++){
+		for(int j=0; j<6; j++){
+			result[i][j] = 0;
+		}
+	}
+```
+Setelah itu, hasilnya di-set terlebih dahulu ke 0 (nol).
+```c
+    for(int i=0; i<4; i++){
+        for(int j=0; j<6; j++){
+            for(int k=0; k<3; k++){
+                result[i][j] += matrix_1[i][k] * matrix_2[k][j];
+            }
+        }
+    }
+
+	printf("[!] Hasil output matriks\n");
+    
+	for(int i=0; i<4; i++){
+		for(int j=0; j<6; j++){
+			printf("%lld ", result[i][j]);
+		}
+        printf("\n");
+	}
+```
+Kemudian dihitung perkalian matriks 1 dan 2 serta hasilnya disimpan ke shared memory, setelah itu di cetak hasilnya. Untuk contohnya sebagai berikut : 
+
+Input matriks 1 dan 2
+```
+[+] Masukkan matriks 4x3:
+4 1 4
+2 1 3
+4 2 2
+1 1 4
+
+[+] Masukkan matriks 3x6:
+2 1 3 2 0 3
+1 4 4 0 0 2
+1 1 0 1 2 1
+```
+
+Hasil output
+```
+[!] Hasil output matriks
+13 12 16 12 8 18 
+8 9 10 7 6 11 
+12 14 20 10 4 18 
+7 9 7 6 8 9 
+```
+
+<a href="https://github.com/LamaulFarid/soal-shift-sisop-modul-3-C04-2021/blob/main/soal2/soal2a.c">soal2a.c</a>.
+
+## B
+
+Membuat program dengan menggunakan matriks output dari program `soal2a`. Kemudian matriks tersebut akan dilakukan perhitungan dengan matrix baru. Perhitungannya adalah setiap cel yang berasal dari matriks A menjadi angka untuk faktorial, lalu cel dari matriks B menjadi batas maksimal faktorialnya (dari paling besar ke paling kecil) atau dengan syarat : 
+```
+If a >= b -> a!/(a-b)!
+If b > a -> a!
+If 0 -> 0
+```
+
+```c
+typedef struct paramArgs {
+    long long A;
+    long long B;
+    long long *address;
+} Params;
+```
+
+Kami membuat `struct ParamArgs` yang nantinya akan digunakan untuk menyimpan matriks hasil dari `soal2a` (matriks A), matriks inputan baru (matriks B) dan hasil faktorial dari matriks A dan matriks B.
+```c
+void* perkaliancell(void* args){
+    struct paramArgs *arg = args;
+    long long A = arg->A;
+    long long B = arg->B;
+    long long *address = arg->address;
+
+    if(A >= B){
+        long long hasil=1;
+        long long start = (A-B)+1;
+        if(A-B == 0) start = 1;
+        if(B==0) hasil = 0;
+        
+        for(long long i=start; i<=A; i++){
+            hasil *= i;
+        }
+        *address = hasil;
+    }else if(B > A){
+        long long hasil=1;
+        if(A==0) hasil = 0;
+        for(long long i=1; i<=A; i++){
+            hasil *= i;
+        }
+        *address = hasil;
+    }
+}
+```
+
+Kami disini juga membuat fungsi `perkaliancell()` untuk melakukan perhitungan pada setiap cel yang berasal dari matriks A daan matriks B dengan syarat : 
+```
+If a >= b -> a!/(a-b)!
+If b > a -> a!
+If 0 -> 0
+```
+
+Setelah didapatkan hasil dari perhitungan matriks A dan matriks B, kemudian hasilnya akan disimpan ke variabel `address` pada `struct ParamArgs`.
+```c
+    key_t key = 4121;
+    int shmid = shmget(key, 512, IPC_CREAT | 0666);
+	void* memory = shmat(shmid, NULL, 0);
+    long long (*A)[6] = memory;
+
+    Params *argument
+```
+
+Kami juga menggunakan shared memory untuk melakukan pertukaran data antar program `soal2a`.
+```c
+	printf("[!] Hasil output matriks\n");
+	for(int i=0; i<4; i++){
+		for(int j=0; j<6; j++){
+			printf("%lld ", A[i][j]);
+		}
+        printf("\n");
+	}
+
+    printf("\n");
+
+    printf("[+] Masukkan matriks 4x6 yang akan di pakai:\n");
+	for(int i = 0; i<4; i++){
+		for(int j = 0; j<6; ++j){
+			scanf("%lld", &B[i][j]);
+		}
+	}
+    printf("\n");
+```
+
+Hasil dari output `soal2a` disimpan pada matriks A kemudian dicetak hasilnya dan kita inputkan matriks yang baru disimpan pada matriks B.
+```c
+    for(int i=0; i<4; i++){
+		for(int j=0; j<6; j++){
+            argument = (Params*) malloc(sizeof(Params));
+            argument->A = A[i][j];
+            argument->B = B[i][j];
+            argument->address = &result[i][j];
+            
+            pthread_create(&thread_id[i][j], NULL, &perkaliancell, (void *)argument);
+		}
+	}
+```
+
+Variabel `argument->A` digunakan untuk menyimpan matriks A `argument->B` digunakan untuk menyimpan matriks B, dan `argument->address` digunakan untuk menyimpan hasil faktorial dari matriks A dan matriks B. Kemudian dibuat `thread` sebanyak 24 kali (matriks 4x6) untuk memanggil fungsi `perkaliancell()` seperti yang dijelaskan diatas. 
+```c
+    for(int i=0; i<4; i++){
+		for(int j=0; j<6; j++){
+            pthread_join(thread_id[i][j], NULL);
+		}
+	}
+```
+
+Setelah itu `thread` akan di-wait sampai `thread` selesai berjalan.
+```c
+    printf("[+] Hasil setelah fungsi selesai dilakukan\n");
+    for(int i=0; i<4; i++){
+		for(int j=0; j<6; j++){
+            printf("%lld ", result[i][j]);
+		}
+        printf("\n");
+	}
+```
+
+Kemudian hasil faktorial dari matriks A dan matriks B akan dicetak. 
+
+<a href="https://github.com/LamaulFarid/soal-shift-sisop-modul-3-C04-2021/blob/main/soal2/soal2b.c">soal2b.c</a>.
+
+## C
+
+Membuat program (soal2c.c) untuk mengecek 5 proses teratas apa saja yang memakan resource komputernya dengan command `ps aux | sort -nrk 3,3 | head -5`
+```c
+void command1() {
+    dup2(pipe_[0][1], 1); 
+    
+    close(pipe_[0][0]);
+    close(pipe_[0][1]);
+
+    execlp("ps", "ps", "-aux", NULL);
+    exit(EXIT_SUCCESS);
+}
+
+void command2() {
+    dup2(pipe_[0][0], 0);   
+    dup2(pipe_[1][1], 1);  
+
+    close(pipe_[0][0]);
+    close(pipe_[0][1]);
+    close(pipe_[1][0]);
+    close(pipe_[1][1]);
+
+    execlp("sort", "sort", "-nrk", "3,3", NULL);
+    exit(EXIT_SUCCESS);
+}
+
+void command3() {
+    dup2(pipe_[1][0], 0); 
+
+    close(pipe_[1][0]);
+    close(pipe_[1][1]);
+    
+    execlp("head", "head", "-5", NULL);
+    exit(EXIT_SUCCESS);
+}
+```
+
+Kami membuat fungsi `command1()` untuk menyimpan perintah `ps aux`, fungsi `command2()` untuk menyimpan perintah `sort -nrk 3,3` dan fungsi `command3()` untuk menyimpan perintah `head -5`.
+```c
+    if(pipe(pipe_[0]) == -1){
+        perror("gagal membuat pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    if(fork() == 0) command1();
+
+    if(pipe(pipe_[1]) == -1){
+        perror("gagal membuat pipe");
+        exit(EXIT_FAILURE);
+    }
+
+    if(fork() == 0) command2();
+
+    close(pipe_[0][0]);
+    close(pipe_[0][1]);
+
+    if(fork() == 0) command3();
+```
+
+Kemudian pada fungsi `main()`, terlebih dahulu dibuat `pipe_[0]` jika gagal membuat `pipe` maka cetak `gagal membuat pipe`. Setelah itu, dibuat fork untuk memanggil fungsi `command1()` dan kemudian dibuat `pipe_[1]` jika gagal membuat `pipe` maka cetak `gagal membuat pipe`. Setelah itu, dibuat fork untuk memanggil fungsi `command2()`. Lalu, fds yang tidak terpakai ditutup dan dibuat fork untuk memanggil fungsi `command3()`.
+
+<a href="https://github.com/LamaulFarid/soal-shift-sisop-modul-3-C04-2021/blob/main/soal2/soal2c.c">soal2c.c</a>.
+
 ## Soal 3
 Pada soal no 3, diminta untuk membuat program dengan kriteria berikut :
 * Memindahkan file ke folder dengan nama sesuai dengan ekstensinya, sesuai dengan command yang diberikan sebagai berikut :
